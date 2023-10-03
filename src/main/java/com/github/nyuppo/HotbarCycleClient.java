@@ -13,11 +13,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (cycleKeyBinding.wasPressed()) {
                 if (client.player != null && !CONFIG.getHoldAndScroll()) {
-                    shiftRows(client, Direction.DOWN);
+                    shiftRows(client, CONFIG.getCycleDirection());
                 }
             }
         });
@@ -71,7 +71,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (singleCycleKeyBinding.wasPressed()) {
                 if (client.player != null && client.player.getInventory() != null && !CONFIG.getHoldAndScroll()) {
-                    shiftSingle(client, client.player.getInventory().selectedSlot, Direction.DOWN);
+                    shiftSingle(client, client.player.getInventory().selectedSlot, CONFIG.getCycleDirection());
                 }
             }
         });
@@ -89,39 +89,38 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
     }
 
-    public static void shiftRows(MinecraftClient client, final Direction requestedDirection) {
-        // invert direction if reverse cycle is enabled
-        final Direction direction = requestedDirection.reverse(CONFIG.getReverseCycleDirection());
+    public static void shiftRows(MinecraftClient client, int amount) {
+        shift(client, amount, (dstY) -> {
+            for (int x=0; x<9; ++x){
+                if (isColumnEnabled(x))
+                    clicker.swap(client, (dstY * 9) + x, x);
+            }
+        });
+    
+    }
 
-        @SuppressWarnings("resource")
-        ClientPlayerInteractionManager interactionManager = client.interactionManager;
-        if (interactionManager == null || client.player == null) {
+    public static void shiftSingle(MinecraftClient client, int x, int amount) {
+        shift(client, amount, (dstY) -> {
+            clicker.swap(client, (dstY * 9) + x, x);
+        });
+    }
+
+    public static void shift(MinecraftClient client, int amount, Consumer<Integer> swapper) {
+        if (client.interactionManager == null || client.player == null) {
             return;
         }
 
-        int i;
-        if (direction != Direction.DOWN ? CONFIG.getEnableRow1() : CONFIG.getEnableRow3()) {
-            for (i = 0; i < 9; i++) {
-                if (isColumnEnabled(i)) {
-                    clicker.swap(client, (direction == Direction.DOWN ? 9 : 27) + i, i);
-                }
-            }
-        }
+        int[] swapMap = SwapMap.CycleAllRows(amount);
 
-        if (CONFIG.getEnableRow2()) {
-            for (i = 0; i < 9; i++) {
-                if (isColumnEnabled(i)) {
-                    clicker.swap(client, 18 + i, i);
-                }
-            }
-        }
-
-        if (direction != Direction.DOWN ? CONFIG.getEnableRow3() : CONFIG.getEnableRow1()) {
-            for (i = 0; i < 9; i++) {
-                if (isColumnEnabled(i)) {
-                    clicker.swap(client, (direction == Direction.DOWN ? 27 : 9) + i, i);
-                }
-            }
+        ProcessBuffer(client, swapMap, swapper);
+        // Checks that  each slot  contain  the intended stack. If not, send the
+        // stack to the buffer and start processing it again.
+        for (int y=1; y<4; ++y)
+        if  (swapMap[y] != y){
+            swapper.accept(y);
+            swapMap[0] = swapMap[y];
+            swapMap[y] = 0;
+            ProcessBuffer(client, swapMap, swapper);
         }
 
         if (CONFIG.getPlaySound()) {
@@ -129,30 +128,20 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
     }
 
-    public static void shiftSingle(MinecraftClient client, int hotbarSlot, final Direction requestedDirection) {
-        // invert direction if reverse cycle is enabled
-        final Direction direction = requestedDirection.reverse(CONFIG.getReverseCycleDirection());
+    /**
+     * Sends  the item stack  in the buffer slot  to its  destination, until the
+     * buffer itself contains its intended item stack.
+     */
+    private static void ProcessBuffer(MinecraftClient client, int[] swapMap, Consumer<Integer> swapper){
+        while (swapMap[0] != 0){
+            int dstY = swapMap[0];
 
-        @SuppressWarnings("resource")
-        ClientPlayerInteractionManager interactionManager = client.interactionManager;
-        if (interactionManager == null || client.player == null) {
-            return;
-        }
+            if (swapMap[dstY] == dstY)
+                throw new RuntimeException("Bad swap-map, multiple stacks go to the same slot.");
 
-        if (direction == Direction.DOWN ? CONFIG.getEnableRow1() : CONFIG.getEnableRow3()) {
-            clicker.swap(client, (direction != Direction.DOWN ? 9 : 27) + hotbarSlot, hotbarSlot);
-        }
-
-        if (CONFIG.getEnableRow2()) {
-            clicker.swap(client, 18 + hotbarSlot, hotbarSlot);
-        }
-
-        if (direction == Direction.DOWN ? CONFIG.getEnableRow3() : CONFIG.getEnableRow1()) {
-            clicker.swap(client, (direction != Direction.DOWN ? 27 : 9) + hotbarSlot, hotbarSlot);
-        }
-
-        if (CONFIG.getPlaySound()) {
-            client.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.8f);
+            swapper.accept(dstY);
+            swapMap[0] = swapMap[dstY];
+            swapMap[dstY] = dstY;
         }
     }
 
@@ -165,7 +154,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         return new VanillaClicker();
     }
 
-    private static boolean isColumnEnabled(int columnIndex) {
+    public static boolean isColumnEnabled(int columnIndex) {
         return switch (columnIndex) {
             case 0 -> CONFIG.getEnableColumn0();
             case 1 -> CONFIG.getEnableColumn1();
@@ -176,6 +165,18 @@ public class HotbarCycleClient implements ClientModInitializer {
             case 6 -> CONFIG.getEnableColumn6();
             case 7 -> CONFIG.getEnableColumn7();
             case 8 -> CONFIG.getEnableColumn8();
+            default -> false;
+        };
+    }
+
+    public static boolean isRowEnabled(int y) {
+        return switch (y){
+            // The mix-up is intentional; Row 1 (bottom) in the config is the 
+            // last row (y=3) in the slot array.
+            case 1 -> CONFIG.getEnableRow3();
+            case 2 -> CONFIG.getEnableRow2();
+            case 3 -> CONFIG.getEnableRow1();
+            case 0 -> true;
             default -> false;
         };
     }

@@ -9,10 +9,13 @@
     "nyuppo"
   ],
   "contributors": [
+    "Estecka",
     "darmiel"
   ],
   "contact": {
-    "homepage": "https://github.com/nyuppo/hotbarcycle"
+    "homepage": "https://modrinth.com/mod/hotbarcycle",
+    "sources": "https://github.com/Estecka/mc-hotbarcycle",
+    "issues":  "https://github.com/Estecka/mc-hotbarcycle/issues"
   },
 
   "license": "MIT",
