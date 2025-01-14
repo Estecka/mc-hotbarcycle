@@ -161,7 +161,7 @@ public class HotbarCycleClient implements ClientModInitializer {
             return;
         }
 
-        int[] swapMap = SwapMap.GetInventorySwapMap(direction);
+        int[] swapMap = SwapMap.CycleAllSlots(direction);
         for (int x=0; x<9; ++x) {
             for (int i=0; i<4 && swapMap[x]!=x; ++i){
                 int from = x;
@@ -183,7 +183,7 @@ public class HotbarCycleClient implements ClientModInitializer {
             return;
         }
 
-        int[] swapMap = SwapMap.GetRowSwapMap(direction);
+        int[] swapMap = SwapMap.CycleAllRows(direction);
         for (int i=0; i<4 && swapMap[0]!=0; ++i){
             int to = swapMap[0];
 

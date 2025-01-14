@@ -3,51 +3,58 @@ package com.github.nyuppo;
 import static com.github.nyuppo.HotbarCycleClient.isRowEnabled;
 import static com.github.nyuppo.HotbarCycleClient.isColumnEnabled;
 
-public class SwapMap 
+/**
+ * Utility for simulating the cycling of slots by multiple steps at once.
+ * Used to reduce the amount of packets sent to the server to 1 per slot.
+ */
+public class SwapMap
 {
 	/**
-	 * Simulates the cycling of a slot by 1 space up.
-	 * @param src The slot's row index.
+	 * Simulates the cycling  of one row by 1 space up, regardless of individual
+	 * column settings.
+	 * @param row The row's index.
 	 * @return The next enabled row, i.e the resulting row after a single cycle.
 	 * Or `src` if the row is disabled
 	 */
-	static public int	GetRollover(int src){
-		if (!isRowEnabled(src))
-			return src;
+	static public int CycleRow(int row){
+		if (!isRowEnabled(row))
+			return row;
 
 		for (int offset=1; offset<4; ++offset) {
-			int dst = (src + offset) % 4;
+			int dst = (row + offset) % 4;
 			if (isRowEnabled(dst))
 				return dst;
 		}
 
-		return src;
+		return row;
 	}
 
 	/**
-	 * Simulates the cycling of a column by 1 space up.
-	 * @return For each row, points to next enabled row.  Disabled rows point to
-	 * themselves.
+	 * Simulates the cycling of all rows by 1 space up, regardless of individual
+	 * column settings.
+	 * @return For each row index,  points to  the resulting row.  Disabled rows
+	 * point to themselve.
 	 */
-	static public int[]	GetRolloverMap(){
+	static public int[]	CycleAllRows(){
 		int [] rolloverMap = new int[4];
 
 		for (int src=0; src<4; ++src)
-			rolloverMap[src] = GetRollover(src);
+			rolloverMap[src] = CycleRow(src);
 
 		return rolloverMap;
 	}
 
 
 	/**
-	 * Simulates the cycling of any column by an arbitrary amount.
+	 * Simulates the cycling  of all rows by  an arbitrary amount, regardless of
+	 * individual column settings.
 	 * @param direction The amount  of  cycles.  Positive  values  cycle upward,
 	 * negative values cycle downward.
 	 * @return For each row index,  points to  the resulting row.  Disabled rows
 	 * point to themselve.
 	 */
-	static public int[]	GetRowSwapMap(int direction){
-		int[] rolloverMap = GetRolloverMap();
+	static public int[]	CycleAllRows(int direction){
+		int[] rolloverMap = CycleAllRows();
 		int[] swapMap = new int[4];
 
 		int swapableRowCount = 0;
@@ -74,9 +81,9 @@ public class SwapMap
 	 * @return For each slot index, points to the resulting slot. Disabled slots
 	 * point to themselves.
 	 */
-	static public int[]	GetInventorySwapMap(int direction){
+	static public int[]	CycleAllSlots(int direction){
 		int[] swapMap = new int[4*9];
-		int[] rowSwap = GetRowSwapMap(direction);
+		int[] rowSwap = CycleAllRows(direction);
 
 		for (int i=0; i<swapMap.length; ++i){
 			int x = i % 9;
