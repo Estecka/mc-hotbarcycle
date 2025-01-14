@@ -81,6 +81,7 @@ public class SwapMap
 	 * @return For each slot index, points to the resulting slot. Disabled slots
 	 * point to themselves.
 	 */
+	@Deprecated
 	static public int[]	CycleAllSlots(int direction){
 		int[] swapMap = new int[4*9];
 		int[] rowSwap = CycleAllRows(direction);
