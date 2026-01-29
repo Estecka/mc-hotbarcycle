@@ -18,11 +18,13 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HotbarCycleClient implements ClientModInitializer {
+    private static final KeyBinding.Category category = new KeyBinding.Category(Identifier.of("hotbarcycle", "keybinds"));
     private static KeyBinding cycleKeyBinding;
     private static KeyBinding singleCycleKeyBinding;
 
@@ -48,11 +50,12 @@ public class HotbarCycleClient implements ClientModInitializer {
     public void onInitializeClient() {
         clicker = getClicker();
 
+
         cycleKeyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.hotbarcycle.cycle",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_H,
-                "category.hotbarcycle.keybinds"
+                category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (cycleKeyBinding.wasPressed()) {
@@ -66,7 +69,7 @@ public class HotbarCycleClient implements ClientModInitializer {
                 "key.hotbarcycle.single_cycle",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
-                "category.hotbarcycle.keybinds"
+                category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (singleCycleKeyBinding.wasPressed()) {
