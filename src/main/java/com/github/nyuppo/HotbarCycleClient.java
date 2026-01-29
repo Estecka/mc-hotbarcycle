@@ -128,7 +128,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
 
         if (CONFIG.getPlaySound()) {
-            client.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.5f);
+            client.player.getEntityWorld().playSoundClient(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.5f);
         }
     }
 
@@ -155,7 +155,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
 
         if (CONFIG.getPlaySound()) {
-            client.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.8f);
+            client.player.getEntityWorld().playSoundClient(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.8f);
         }
     }
 
