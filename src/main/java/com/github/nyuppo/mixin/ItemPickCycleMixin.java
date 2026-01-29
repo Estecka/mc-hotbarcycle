@@ -23,7 +23,7 @@ public class ItemPickCycleMixin {
 
     @WrapOperation( method="doItemPick", at=@At(value="INVOKE", target="net/minecraft/client/network/ClientPlayerInteractionManager.pickItemFromBlock(Lnet/minecraft/util/math/BlockPos;Z)V") )
     private void doBlockPick(ClientPlayerInteractionManager manager, BlockPos blockPos, boolean includeData, Operation<Void> original){
-        final World world = this.player.getWorld();
+        final World world = this.player.getEntityWorld();
         final ItemStack pickedItem = world.getBlockState(blockPos).getPickStack(world, blockPos, includeData);
 
         if (!tryCyclePickedItem(pickedItem))
