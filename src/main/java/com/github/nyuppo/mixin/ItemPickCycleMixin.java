@@ -40,6 +40,9 @@ public class ItemPickCycleMixin {
 
     @Unique
     private boolean tryCyclePickedItem(ItemStack pickedItem) {
+        if (pickedItem == null)
+            return false;
+
         final PlayerInventory inventory = this.player.getInventory();
         final HotbarCycleConfig config = HotbarCycleClient.getConfig();
         int slot = inventory.getSlotWithStack(pickedItem);
