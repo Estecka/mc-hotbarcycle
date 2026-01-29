@@ -10,7 +10,8 @@
   ],
   "contributors": [
     "Estecka",
-    "darmiel"
+    "darmiel",
+    "hugeblank"
   ],
   "contact": {
     "homepage": "https://modrinth.com/mod/hotbarcycle",
@@ -35,7 +36,7 @@
   ],
 
   "depends": {
-    "minecraft": "~1.21.5 <=1.21.8",
+    "minecraft": "~1.21.9 <=1.21.10",
     "fabricloader": ">=0.19.3",
     "fabric-api": "*",
     "java": ">=21"
