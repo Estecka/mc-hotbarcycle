@@ -1,11 +1,8 @@
 package com.github.nyuppo.compat;
 
-import com.github.nyuppo.HotbarCycleClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.screen.slot.SlotActionType;
-
-import java.util.Map;
 
 public class VanillaClicker implements Clicker {
     @Override
