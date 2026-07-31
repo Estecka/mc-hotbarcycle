@@ -17,7 +17,7 @@
   "text.autoconfig.hotbarcycle.option.repeatSlotToCycle": "Enable Repeat Slot to Cycle",
   "text.autoconfig.hotbarcycle.option.repeatSlotToCycle.@Tooltip": "Click the selected slot again to cycle it.",
   "text.autoconfig.hotbarcycle.option.cycleWhenPickingBlock": "Cycle when picking blocks",
-  "text.autoconfig.hotbarcycle.option.cycleWhenPickingBlock.@Tooltip": "Targeted block will be cycled into your hotbar before selecting it.",
+  "text.autoconfig.hotbarcycle.option.cycleWhenPickingBlock.@Tooltip": "Targeted block will be cycled into your hotbar before selecting it.\nWarning: this moves the picking logic from the serverside to the clientside, and thus may result in picked items being different.",
   "text.autoconfig.hotbarcycle.option.pickCyclesWholeHotbar": "Picking cycles whole hotbar",
   "text.autoconfig.hotbarcycle.option.pickCyclesWholeHotbar.@Tooltip": "Whether picking a block should cycle the whole hotbar, or only the approriate slot.",
 
