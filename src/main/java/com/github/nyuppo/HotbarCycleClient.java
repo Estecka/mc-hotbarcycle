@@ -6,27 +6,27 @@ import com.github.nyuppo.compat.VanillaClicker;
 import com.github.nyuppo.config.ClothConfigHotbarCycleConfig;
 import com.github.nyuppo.config.DefaultHotbarCycleConfig;
 import com.github.nyuppo.config.HotbarCycleConfig;
+import com.mojang.blaze3d.platform.InputConstants;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HotbarCycleClient implements ClientModInitializer {
-    private static final KeyBinding.Category category = new KeyBinding.Category(Identifier.of("hotbarcycle", "keybinds"));
-    private static KeyBinding cycleKeyBinding;
-    private static KeyBinding singleCycleKeyBinding;
+    private static final KeyMapping.Category category = new KeyMapping.Category(Identifier.fromNamespaceAndPath("hotbarcycle", "keybinds"));
+    private static KeyMapping cycleKeyBinding;
+    private static KeyMapping singleCycleKeyBinding;
 
     private static final HotbarCycleConfig CONFIG;
 
@@ -38,11 +38,11 @@ public class HotbarCycleClient implements ClientModInitializer {
         return CONFIG;
     }
 
-    public static KeyBinding getCycleKeyBinding() {
+    public static KeyMapping getCycleKeyBinding() {
         return cycleKeyBinding;
     }
 
-    public static KeyBinding getSingleCycleKeyBinding() {
+    public static KeyMapping getSingleCycleKeyBinding() {
         return singleCycleKeyBinding;
     }
 
@@ -50,28 +50,28 @@ public class HotbarCycleClient implements ClientModInitializer {
     public void onInitializeClient() {
         clicker = getClicker();
 
-        cycleKeyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        cycleKeyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.hotbarcycle.cycle",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_H,
                 category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (cycleKeyBinding.wasPressed()) {
+            while (cycleKeyBinding.consumeClick()) {
                 if (client.player != null && !CONFIG.getHoldAndScroll()) {
                     shiftRows(client, CONFIG.getCycleDirection());
                 }
             }
         });
 
-        singleCycleKeyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        singleCycleKeyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.hotbarcycle.single_cycle",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
                 category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (singleCycleKeyBinding.wasPressed()) {
+            while (singleCycleKeyBinding.consumeClick()) {
                 if (client.player != null && client.player.getInventory() != null && !CONFIG.getHoldAndScroll()) {
                     shiftSingle(client, client.player.getInventory().getSelectedSlot(), CONFIG.getCycleDirection());
                 }
@@ -91,7 +91,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
     }
 
-    public static void shiftRows(MinecraftClient client, int amount) {
+    public static void shiftRows(Minecraft client, int amount) {
         shift(client, amount, (dstY) -> {
             for (int x=0; x<9; ++x){
                 if (isColumnEnabled(x))
@@ -101,14 +101,14 @@ public class HotbarCycleClient implements ClientModInitializer {
     
     }
 
-    public static void shiftSingle(MinecraftClient client, int x, int amount) {
+    public static void shiftSingle(Minecraft client, int x, int amount) {
         shift(client, amount, (dstY) -> {
             clicker.swap(client, (dstY * 9) + x, x);
         });
     }
 
-    public static void shift(MinecraftClient client, int amount, Consumer<Integer> swapper) {
-        if (client.interactionManager == null || client.player == null) {
+    public static void shift(Minecraft client, int amount, Consumer<Integer> swapper) {
+        if (client.gameMode == null || client.player == null) {
             return;
         }
 
@@ -126,7 +126,7 @@ public class HotbarCycleClient implements ClientModInitializer {
         }
 
         if (CONFIG.getPlaySound()) {
-            client.player.getEntityWorld().playSoundClient(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.MASTER, 0.5f, 1.5f);
+            client.player.level().playPlayerSound(SoundEvents.BOOK_PAGE_TURN, SoundSource.MASTER, 0.5f, 1.5f);
         }
     }
 
@@ -134,7 +134,7 @@ public class HotbarCycleClient implements ClientModInitializer {
      * Sends  the item stack  in the buffer slot  to its  destination, until the
      * buffer itself contains its intended item stack.
      */
-    private static void ProcessBuffer(MinecraftClient client, int[] swapMap, Consumer<Integer> swapper){
+    private static void ProcessBuffer(Minecraft client, int[] swapMap, Consumer<Integer> swapper){
         while (swapMap[0] != 0){
             int dstY = swapMap[0];
 

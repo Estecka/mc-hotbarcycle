@@ -1,7 +1,7 @@
 package com.github.nyuppo.compat;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public interface Clicker {
-    void swap(MinecraftClient client, int from, int to);
+    void swap(Minecraft client, int from, int to);
 }
