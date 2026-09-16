@@ -19,7 +19,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import java.util.function.Consumer;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +51,8 @@ public class HotbarCycleClient implements ClientModInitializer {
 
         cycleKeyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.hotbarcycle.cycle",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_H,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_H,
                 category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -66,8 +65,8 @@ public class HotbarCycleClient implements ClientModInitializer {
 
         singleCycleKeyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.hotbarcycle.single_cycle",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_J,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_J,
                 category
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
