@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HotbarCycleClient implements ClientModInitializer {
-    private static final KeyMapping.Category category = new KeyMapping.Category(Identifier.fromNamespaceAndPath("hotbarcycle", "keybinds"));
+    private static final KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("hotbarcycle", "keybinds"));
     private static KeyMapping cycleKeyBinding;
     private static KeyMapping singleCycleKeyBinding;
 
